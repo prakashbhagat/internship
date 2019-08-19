@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>366Pi piternsNet</title>
+</head>
+<body>
+    
+    <h1>piternsNet</h1>
+    <strong>A Simple HTML-5 and Websockets Applicaion</strong>
+
+    <script>
+        function startWebSocket(wsUri) {
+            
+            return new Promise((resolve, reject) => {
+                websocket = new WebSocket(wsUri);
+                websocket.onopen = function (evt) {
+                    resolve(onOpen(evt))
+                };
+                websocket.onclose = function (evt) {
+                    reject(onClose(evt))
+                };
+                websocket.onmessage = function (evt) {
+                    resolve(onMessage(evt))
+                };
+                websocket.onerror = function (evt) {
+                    reject(onError(evt))
+                };
+            })
+        }
+        
+        function onOpen (evt) {
+            console.info(`INFO: Connected successfully to Supernode: ${evt.srcElement.url}`);
+        }
+        
+        function onClose(evt) {
+            console.info(`INFO: Disconnected to Supernode server: ${evt.srcElement.url}`);
+        }
+        
+        function onMessage(evt) {
+            var response = evt.data || evt;
+            console.log('RESPONSE: ' + response);
+
+            var res_pos = response.indexOf('{');
+            if (res_pos >= 0) {
+                var res = response.substr(res_pos);
+                try {
+                    var res_obj = JSON.parse(res);
+                    console.table(res_obj);
+
+                } catch(e) {
+                    console.error(e);
+                }
+            }
+        }
+        
+        function onError(evt) {
+            console.error(`ERROR: Websocket Connection to ${evt.srcElement.url} returned error.`);
+        }
+
+        function sendMessage(msg='', receiverList=[]) {
+            const sender = localStorage.piternUser; 
+            const receivers = receiverList;
+            const msgObj = {
+                sender, receivers, msg
+            }
+            websocket.send(JSON.stringify(msgObj));
+        }
+
+        function addUser(userName='', addUserValue='') {
+            if(userName.length < 3 || addUserValue < 3) {
+                alert('Please specify a valid username or value.');
+                return;
+            }
+            if (typeof localStorage.userName !== "string") {
+                localStorage[userName] = addUserValue;
+            }
+        }
+
+        function registerMe(addUserValue='') {
+            if (typeof localStorage.userName !== "string") {
+                localStorage['piternUser'] = addUserValue;
+            }
+        }
+    </script>
+
+</body>
+</html>
